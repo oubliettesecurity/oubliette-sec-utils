@@ -14,6 +14,7 @@ this package, not the other way round.
 from oubliette_sec_utils.argv import (
     ALLOWLIST_IDENTIFIER,
     ALLOWLIST_STRICT,
+    Decision,
     validate_allowlist,
     validate_argument,
 )
@@ -23,16 +24,19 @@ from oubliette_sec_utils.paths import (
 )
 from oubliette_sec_utils.ssrf import (
     FLY_IO_ULA,
+    UrlDecision,
     is_ip_safe,
     validate_outbound_url,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "ALLOWLIST_IDENTIFIER",
     "ALLOWLIST_STRICT",
     "FLY_IO_ULA",
+    "Decision",
+    "UrlDecision",
     "__version__",
     "contained_in",
     "is_ip_safe",
