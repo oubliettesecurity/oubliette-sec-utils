@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oubliette-sec-utils"
+version = "0.1.0"
+description = "Shared security helpers for Oubliette Shield / Sentinel / Dungeon / Trap / sift-guard."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+authors = [
+    { name = "Oubliette Security", email = "info@oubliettesecurity.com" },
+]
+keywords = [
+    "security", "ssrf", "path-traversal", "argument-injection", "ai-security",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Security",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.15",
+]
+
+[project.urls]
+Homepage = "https://github.com/oubliettesecurity/oubliette-sec-utils"
+Issues = "https://github.com/oubliettesecurity/oubliette-sec-utils/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "E501",
+    "SIM102", "SIM103", "SIM105", "SIM108", "SIM117",
+    "RUF005", "RUF012", "RUF022",
+    "B008", "B027", "B904",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["F401", "F811", "F841"]
