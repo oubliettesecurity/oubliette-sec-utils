@@ -82,7 +82,11 @@ def _resolve_and_check(hostname: str) -> tuple[bool, str]:
         return False, f"No DNS results for {hostname}"
 
     for _family, _type, _proto, _canonname, sockaddr in addrinfos:
-        ip_str = sockaddr[0]
+        # sockaddr[0] is typed as ``str | int`` by typeshed (AF_INET /
+        # AF_INET6 returns str; AF_UNIX / AF_PACKET returns int). We
+        # explicitly requested AF_UNSPEC + SOCK_STREAM above which only
+        # yields str, but cast defensively so mypy sees it.
+        ip_str = str(sockaddr[0])
         if not is_ip_safe(ip_str):
             return False, (f"Hostname {hostname} resolves to private/reserved IP {ip_str}")
     return True, ""

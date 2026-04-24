@@ -10,6 +10,7 @@ Validate every user string at the tool boundary.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass
 
 # Characters forbidden in any user-controlled string passed to a
@@ -73,7 +74,7 @@ def validate_argument(
 
 def validate_allowlist(
     value: object,
-    allowlist,
+    allowlist: Iterable[str],
     *,
     case_insensitive: bool = True,
 ) -> Decision:

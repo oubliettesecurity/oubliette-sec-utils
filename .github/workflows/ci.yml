@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly smoke against the published wheel so a bad release or a
+    # README example that drifts from reality is caught within 7 days.
+    - cron: "0 14 * * 1"
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dev deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Run tests
+        run: pytest -q
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install ruff
+        run: pip install ruff>=0.15
+      - name: Ruff check
+        run: ruff check src/ tests/
+      - name: Ruff format check
+        run: ruff format --check src/ tests/
+
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install mypy + runtime deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install mypy
+          pip install -e ".[dev]"
+      - name: mypy --strict on src/
+        run: python -m mypy --strict --follow-imports=silent src/
+
+  pypi-smoke:
+    # Runs on PR, on main push, and on the weekly cron. Installs the
+    # currently-published wheel from PyPI (not the editable source tree)
+    # and exercises the README usage example verbatim, so a documented
+    # API that doesn't actually work fails CI instead of failing a user
+    # on their first pip install.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Install from PyPI
+        run: |
+          python -m pip install --upgrade pip
+          pip install oubliette-sec-utils
+      - name: Exercise README example
+        run: |
+          python - <<'PY'
+          from oubliette_sec_utils import (
+              contained_in, safe_realpath,
+              validate_argument, validate_allowlist,
+              is_ip_safe, validate_outbound_url, FLY_IO_ULA,
+          )
+
+          # Path scope
+          assert contained_in("/evidence/disk.E01", "/evidence") is True
+          assert contained_in("/evidence-stolen/disk.E01", "/evidence") is False
+
+          # Argv: validate_argument catches flag-prefixed strings.
+          assert validate_argument("--plugins /tmp/evil.pl", allow_spaces=True).blocked is True
+          # validate_argument does NOT flag embedded ``--`` mid-string --
+          # for finite-set parameters, validate_allowlist is the right tool.
+          assert validate_allowlist(
+              "SYSTEM --plugins /tmp/evil.pl", ["SYSTEM", "SOFTWARE"]
+          ).blocked is True
+
+          # SSRF
+          assert is_ip_safe("127.0.0.1") is False
+          assert is_ip_safe("fdaa::1") is False  # Fly.io 6PN ULA
+          assert is_ip_safe("1.1.1.1") is True
+          d = validate_outbound_url("http://169.254.169.254/latest/meta-data/")
+          assert d.safe is False and "internal" in d.reason.lower()
+
+          print("PyPI artifact smoke-test: PASS")
+          PY
