@@ -39,6 +39,12 @@ Issues = "https://github.com/oubliettesecurity/oubliette-sec-utils/issues"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+# PEP 561 marker: lets downstream ``mypy --strict`` see our annotations
+# instead of treating the package as untyped (no ``import-untyped``
+# warnings in consumers).
+oubliette_sec_utils = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
