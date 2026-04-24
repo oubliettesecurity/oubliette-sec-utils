@@ -38,9 +38,15 @@ from oubliette_sec_utils import (
 assert contained_in("/evidence/disk.E01", "/evidence") is True
 assert contained_in("/evidence-stolen/disk.E01", "/evidence") is False
 
-# Argv injection
-d = validate_argument("SYSTEM --plugins /tmp/evil.pl", allow_spaces=True)
-assert d.blocked is True
+# Argv injection -- validate_argument catches flag-prefixed strings
+assert validate_argument("--plugins /tmp/evil.pl", allow_spaces=True).blocked is True
+
+# validate_argument does NOT catch flags embedded mid-string (by design;
+# a single argv entry is passed whole to the callee). For finite-set
+# parameters like registry hive names, use validate_allowlist:
+assert validate_allowlist(
+    "SYSTEM --plugins /tmp/evil.pl", ["SYSTEM", "SOFTWARE"]
+).blocked is True
 
 # SSRF
 d = validate_outbound_url("http://169.254.169.254/latest/meta-data/")
