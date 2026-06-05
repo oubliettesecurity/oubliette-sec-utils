@@ -31,6 +31,10 @@ dev = [
     "pytest>=8.0",
     "ruff>=0.15",
 ]
+# Clean-machine test environment: `uv pip install -e ".[test]" && pytest` -> green.
+test = [
+    "oubliette-sec-utils[dev]",
+]
 
 [project.urls]
 Homepage = "https://github.com/oubliettesecurity/oubliette-sec-utils"
