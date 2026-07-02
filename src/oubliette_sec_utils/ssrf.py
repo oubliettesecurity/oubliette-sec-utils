@@ -109,6 +109,11 @@ def validate_outbound_url(url: str) -> UrlDecision:
     if parsed.scheme not in ("http", "https"):
         return UrlDecision(safe=False, reason=f"Invalid URL scheme: {parsed.scheme}")
     hostname = (parsed.hostname or "").lower()
+    # A fully-qualified name may carry a trailing root-label dot
+    # (``evil.local.``). ``"evil.local.".endswith(".local")`` is False, so
+    # without stripping it the trailing-dot form bypasses the name-based
+    # blocklist entirely. The trailing dot is DNS-semantically insignificant.
+    hostname = hostname.rstrip(".")
     if not hostname:
         return UrlDecision(safe=False, reason="URL has no hostname")
     if hostname in _BLOCKED_HOSTNAMES:
