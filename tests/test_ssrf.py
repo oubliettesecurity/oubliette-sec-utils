@@ -59,6 +59,12 @@ class TestValidateOutboundUrl:
             ("http://127.0.0.1/", "private"),
             ("http://10.0.0.5/", "private"),
             ("http://[fdaa::1]/", "private"),
+            # Trailing-dot FQDN must not bypass the name-based blocklist.
+            ("http://localhost./", "internal"),
+            ("http://evil.local./", "internal"),
+            ("http://foo.internal./", "internal"),
+            ("http://foo.corp./", "internal"),
+            ("http://169.254.169.254./", "internal"),
         ],
     )
     def test_blocked_urls(self, url, reason_contains):
