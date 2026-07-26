@@ -28,8 +28,9 @@ from oubliette_sec_utils.ssrf import (
     is_ip_safe,
     validate_outbound_url,
 )
+from oubliette_sec_utils.webhook import verify_webhook_signature
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "ALLOWLIST_IDENTIFIER",
@@ -44,4 +45,5 @@ __all__ = [
     "validate_allowlist",
     "validate_argument",
     "validate_outbound_url",
+    "verify_webhook_signature",
 ]
